@@ -1,11 +1,15 @@
-import java.util.Arrays;
+import java.lang.Math;
 
-/// Лабораторна робота №4
+// Лабораторна робота №4
 // Тема: Патерн проектування "Адаптер"
+
+// 1. TARGET (Цільовий інтерфейс) - НЕ ЗМІНЮЄТЬСЯ
+
 /**
  * Цільовий інтерфейс, який очікує клієнт.
  */
 interface Notification {
+    /** Відправляє сповіщення з заголовком і тілом повідомлення. */
     void send(String title, String message);
 }
 
@@ -24,9 +28,10 @@ class EmailNotification implements Notification {
     }
 }
 
+// АДАПТОВАНІ КЛАСИ (Adaptee) - НЕ СУМІСНІ З INTERFACE Notification
+
 /**
  * Адаптований клас: API для відправки повідомлень у Slack.
- * Вимагає login, apiKey та chatId.
  */
 class SlackApi {
     private final String login;
@@ -51,7 +56,6 @@ class SlackApi {
 
 /**
  * Адаптований клас: Сервіс для відправки SMS.
- * Вимагає phone та sender.
  */
 class SmsSender {
     private final String phone;
@@ -71,6 +75,8 @@ class SmsSender {
         System.out.println("-> [SMS API] Body: " + body);
     }
 }
+
+// КЛАСИ АДАПТЕРІВ (Adapter) - РЕАЛІЗУЮТЬ INTERFACE Notification
 
 /**
  * Адаптер для Slack. Перетворює виклик Notification::send() на SlackApi::post().
@@ -108,11 +114,19 @@ class SmsNotificationAdapter implements Notification {
     @Override
     public void send(String title, String message) {
         // Логіка адаптації: SMS не підтримує довгий формат. Обмежуємо повідомлення.
-        String smsBody = "ALERT: " + message.substring(0, Math.min(message.length(), 80)) + "..."; 
+        
+        // Визначаємо довжину, обмежуючи до 80 символів (для прикладу)
+        int maxLen = 80;
+        String truncatedMessage = message.substring(0, Math.min(message.length(), maxLen));
+        
+        String smsBody = "ALERT: " + truncatedMessage + (message.length() > maxLen ? "..." : ""); 
         
         this.smsSender.sendSms(smsBody); // Виклик несумісного методу Adaptee
     }
 }
+
+// КЛІЄНТСЬКИЙ КОД (Client)
+
 public class AdapterDemo {
 
     /**
