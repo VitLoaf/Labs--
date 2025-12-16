@@ -2,11 +2,6 @@ import java.util.Arrays;
 
 /// Лабораторна робота №4
 // Тема: Патерн проектування "Адаптер"
-
-// ==========================================================
-// 1. TARGET (Цільовий інтерфейс) - НЕ ЗМІНЮЄТЬСЯ
-// ==========================================================
-
 /**
  * Цільовий інтерфейс, який очікує клієнт.
  */
@@ -28,10 +23,6 @@ class EmailNotification implements Notification {
         System.out.println("[EMAIL] Sent email to '" + this.adminEmail + "' with title '" + title + "' that says '" + message + "'.");
     }
 }
-
-// ==========================================================
-// АДАПТОВАНІ КЛАСИ (Adaptee) - НЕ СУМІСНІ З INTERFACE Notification
-// ==========================================================
 
 /**
  * Адаптований клас: API для відправки повідомлень у Slack.
@@ -81,10 +72,6 @@ class SmsSender {
     }
 }
 
-// ==========================================================
-// КЛАСИ АДАПТЕРІВ (Adapter) - РЕАЛІЗУЮТЬ INTERFACE Notification
-// ==========================================================
-
 /**
  * Адаптер для Slack. Перетворює виклик Notification::send() на SlackApi::post().
  */
@@ -126,11 +113,6 @@ class SmsNotificationAdapter implements Notification {
         this.smsSender.sendSms(smsBody); // Виклик несумісного методу Adaptee
     }
 }
-
-// ==========================================================
-// КЛІЄНТСЬКИЙ КОД (Client)
-// ==========================================================
-
 public class AdapterDemo {
 
     /**
@@ -162,4 +144,5 @@ public class AdapterDemo {
         notifyAdmin(smsAdapter, title, message);
     }
 }
+
 
