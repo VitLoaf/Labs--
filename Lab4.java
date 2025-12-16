@@ -1,35 +1,31 @@
-<?php
+import java.util.Arrays;
 
 /// Лабораторна робота №4
 // Тема: Патерн проектування "Адаптер"
-// Мета: Інтеграція несумісних API (Slack, SMS) через єдиний інтерфейс Notification.
 
-// 1. Target (Цільовий інтерфейс) - НЕ ЗМІНЮЄТЬСЯ
-interface Notification
-{
-    /**
-     * Відправляє сповіщення з заголовком і тілом повідомлення.
-     * @param string $title Заголовок сповіщення.
-     * @param string $message Тіло повідомлення.
-     */
-    public function send(string $title, string $message);
+// ==========================================================
+// 1. TARGET (Цільовий інтерфейс) - НЕ ЗМІНЮЄТЬСЯ
+// ==========================================================
+
+/**
+ * Цільовий інтерфейс, який очікує клієнт.
+ */
+interface Notification {
+    void send(String title, String message);
 }
 
 // 2. Існуючий компонент (Email)
-class EmailNotification implements Notification
-{
-    private $adminEmail;
+class EmailNotification implements Notification {
+    private final String adminEmail;
 
-    public function __construct(string $adminEmail)
-    {
-        $this->adminEmail = $adminEmail;
+    public EmailNotification(String adminEmail) {
+        this.adminEmail = adminEmail;
     }
 
-    public function send(string $title, string $message): void
-    {
+    @Override
+    public void send(String title, String message) {
         // Імітація відправки email
-        // mail($this->adminEmail, $title, $message); 
-        echo "[EMAIL] Sent email to '{$this->adminEmail}' with title '$title' that says '$message'.\n";
+        System.out.println("[EMAIL] Sent email to '" + this.adminEmail + "' with title '" + title + "' that says '" + message + "'.");
     }
 }
 
@@ -39,29 +35,26 @@ class EmailNotification implements Notification
 
 /**
  * Адаптований клас: API для відправки повідомлень у Slack.
- * Вимагає авторизації та chatId.
+ * Вимагає login, apiKey та chatId.
  */
-class SlackApi
-{
-    private $login;
-    private $apiKey;
-    private $chatId;
+class SlackApi {
+    private final String login;
+    private final String apiKey;
+    private final String chatId;
 
-    public function __construct(string $login, string $apiKey, string $chatId)
-    {
-        $this->login = $login;
-        $this->apiKey = $apiKey;
-        $this->chatId = $chatId;
+    public SlackApi(String login, String apiKey, String chatId) {
+        this.login = login;
+        this.apiKey = apiKey;
+        this.chatId = chatId;
     }
 
     /**
      * Несумісний метод: приймає лише один текстовий параметр.
      */
-    public function post(string $text)
-    {
+    public void post(String text) {
         // Імітація авторизації та відправки
-        echo "-> [Slack API] Authorized with login '{$this->login}' and key '{$this->apiKey}'.\n";
-        echo "-> [Slack API] Posting to chat '{$this->chatId}': $text\n";
+        System.out.println("-> [Slack API] Authorized with login '" + this.login + "' and key '" + this.apiKey + "'.");
+        System.out.println("-> [Slack API] Posting to chat '" + this.chatId + "': " + text);
     }
 }
 
@@ -69,25 +62,22 @@ class SlackApi
  * Адаптований клас: Сервіс для відправки SMS.
  * Вимагає phone та sender.
  */
-class SmsSender
-{
-    private $phone;
-    private $sender;
+class SmsSender {
+    private final String phone;
+    private final String sender;
 
-    public function __construct(string $phone, string $sender)
-    {
-        $this->phone = $phone;
-        $this->sender = $sender;
+    public SmsSender(String phone, String sender) {
+        this.phone = phone;
+        this.sender = sender;
     }
 
     /**
      * Несумісний метод: приймає лише тіло повідомлення.
      */
-    public function sendSms(string $body)
-    {
+    public void sendSms(String body) {
         // Імітація відправки SMS
-        echo "-> [SMS API] Sending SMS from '{$this->sender}' to '{$this->phone}'.\n";
-        echo "-> [SMS API] Body: $body\n";
+        System.out.println("-> [SMS API] Sending SMS from '" + this.sender + "' to '" + this.phone + "'.");
+        System.out.println("-> [SMS API] Body: " + body);
     }
 }
 
@@ -98,46 +88,42 @@ class SmsSender
 /**
  * Адаптер для Slack. Перетворює виклик Notification::send() на SlackApi::post().
  */
-class SlackNotificationAdapter implements Notification
-{
-    private $slackApi;
+class SlackNotificationAdapter implements Notification {
+    private final SlackApi slackApi;
 
     // Адаптер містить посилання на об'єкт Adaptee
-    public function __construct(SlackApi $slackApi)
-    {
-        $this->slackApi = $slackApi;
+    public SlackNotificationAdapter(SlackApi slackApi) {
+        this.slackApi = slackApi;
     }
 
-    // Реалізація цільового інтерфейсу
-    public function send(string $title, string $message): void
-    {
+    // Реалізація цільового інтерфейсу Notification
+    @Override
+    public void send(String title, String message) {
         // Логіка адаптації: об'єднуємо title та message, щоб відповідати SlackApi::post(text)
-        $textToPost = "!!! ALERT: $title !!!\nMessage: $message";
+        String textToPost = "!!! ALERT: " + title + " !!!\nMessage: " + message;
         
-        $this->slackApi->post($textToPost); // Виклик несумісного методу Adaptee
+        this.slackApi.post(textToPost); // Виклик несумісного методу Adaptee
     }
 }
 
 /**
  * Адаптер для SMS. Перетворює виклик Notification::send() на SmsSender::sendSms().
  */
-class SmsNotificationAdapter implements Notification
-{
-    private $smsSender;
+class SmsNotificationAdapter implements Notification {
+    private final SmsSender smsSender;
 
     // Адаптер містить посилання на об'єкт Adaptee
-    public function __construct(SmsSender $smsSender)
-    {
-        $this->smsSender = $smsSender;
+    public SmsNotificationAdapter(SmsSender smsSender) {
+        this.smsSender = smsSender;
     }
 
-    // Реалізація цільового інтерфейсу
-    public function send(string $title, string $message): void
-    {
+    // Реалізація цільового інтерфейсу Notification
+    @Override
+    public void send(String title, String message) {
         // Логіка адаптації: SMS не підтримує довгий формат. Обмежуємо повідомлення.
-        $smsBody = "ALERT: " . substr($message, 0, 80) . "..."; 
+        String smsBody = "ALERT: " + message.substring(0, Math.min(message.length(), 80)) + "..."; 
         
-        $this->smsSender->sendSms($smsBody); // Виклик несумісного методу Adaptee
+        this.smsSender.sendSms(smsBody); // Виклик несумісного методу Adaptee
     }
 }
 
@@ -145,36 +131,35 @@ class SmsNotificationAdapter implements Notification
 // КЛІЄНТСЬКИЙ КОД (Client)
 // ==========================================================
 
-class ClientDemo
-{
+public class AdapterDemo {
+
     /**
      * Функція, яка приймає будь-який об'єкт, що реалізує інтерфейс Notification.
      */
-    public static function notifyAdmin(Notification $notification, string $title, string $message)
-    {
-        echo "\n--- Sending Notification via " . get_class($notification) . " ---\n";
-        $notification->send($title, $message);
-        echo "--------------------------------------------------------\n";
+    public static void notifyAdmin(Notification notification, String title, String message) {
+        System.out.println("\n--- Sending Notification via " + notification.getClass().getSimpleName() + " ---");
+        notification.send(title, message);
+        System.out.println("--------------------------------------------------------");
+    }
+
+    public static void main(String[] args) {
+
+        String title = "CRITICAL SERVER FAILURE";
+        String message = "Database connection timed out (Code 500). System is operating in read-only mode.";
+
+        // 1. Оригінальний Email
+        Notification emailNotification = new EmailNotification("admin@corporation.com");
+        notifyAdmin(emailNotification, title, message);
+
+        // 2. Slack (Через Адаптер)
+        SlackApi slackApi = new SlackApi("monitoring_bot", "SECURE_KEY_XYZ", "#alerts-dev");
+        Notification slackAdapter = new SlackNotificationAdapter(slackApi);
+        notifyAdmin(slackAdapter, title, message);
+
+        // 3. SMS (Через Адаптер)
+        SmsSender smsSender = new SmsSender("+380991112233", "Monitoring");
+        Notification smsAdapter = new SmsNotificationAdapter(smsSender);
+        notifyAdmin(smsAdapter, title, message);
     }
 }
 
-// --- Демонстрація використання ---
-
-$title = "CRITICAL SERVER FAILURE";
-$message = "Database connection timed out (Code 500). System is operating in read-only mode.";
-
-// 1. Оригінальний Email
-$emailNotification = new EmailNotification("admin@corporation.com");
-ClientDemo::notifyAdmin($emailNotification, $title, $message);
-
-// 2. Slack (Через Адаптер)
-$slackApi = new SlackApi("monitoring_bot", "SECURE_KEY_XYZ", "#alerts-dev");
-$slackAdapter = new SlackNotificationAdapter($slackApi);
-ClientDemo::notifyAdmin($slackAdapter, $title, $message);
-
-// 3. SMS (Через Адаптер)
-$smsSender = new SmsSender("+380991112233", "Monitoring");
-$smsAdapter = new SmsNotificationAdapter($smsSender);
-ClientDemo::notifyAdmin($smsAdapter, $title, $message);
-
-?>
