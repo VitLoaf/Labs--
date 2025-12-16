@@ -1,11 +1,35 @@
-// Інтерфейс продукту
+// Лабораторна робота №2
+// Тема: Патерн проектування "Фабричний метод"
+
+public class FactoryMethodSocialMediaDemo {
+
+    public static void main(String[] args) {
+
+        // Публікація повідомлення у Facebook
+        SocialNetworkFactory facebookFactory =
+                new FacebookFactory("user_login", "user_password");
+        SocialNetwork facebook = facebookFactory.createSocialNetwork();
+        facebook.postMessage("Hello Facebook!");
+
+        // Публікація повідомлення у LinkedIn
+        SocialNetworkFactory linkedInFactory =
+                new LinkedInFactory("user@email.com", "user_password");
+        SocialNetwork linkedIn = linkedInFactory.createSocialNetwork();
+        linkedIn.postMessage("Hello LinkedIn!");
+    }
+}
+
+// Продукт
 interface SocialNetwork {
-    void login(String username, String password);
+
+    boolean authenticate();
+
     void postMessage(String message);
 }
 
-//Конкретний продукт: Facebook
+// Конкретний продукт Facebook
 class Facebook implements SocialNetwork {
+
     private String login;
     private String password;
 
@@ -15,18 +39,19 @@ class Facebook implements SocialNetwork {
     }
 
     @Override
-    public void login(String username, String password) {
-        System.out.println("Підключення до Facebook через логін: " + username);
+    public boolean authenticate() {
+        return true;
     }
 
     @Override
     public void postMessage(String message) {
-        System.out.println("Публікація у Facebook: " + message);
+        System.out.println("Facebook post: " + message);
     }
 }
 
-//Конкретний продукт: LinkedIn
+// Конкретний продукт LinkedIn
 class LinkedIn implements SocialNetwork {
+
     private String email;
     private String password;
 
@@ -36,66 +61,52 @@ class LinkedIn implements SocialNetwork {
     }
 
     @Override
-    public void login(String username, String password) {
-        System.out.println("Підключення до LinkedIn через email: " + username);
+    public boolean authenticate() {
+        return true;
     }
 
     @Override
     public void postMessage(String message) {
-        System.out.println("Публікація у LinkedIn: " + message);
+        System.out.println("LinkedIn post: " + message);
     }
 }
 
-//Абстрактний творець
-abstract class SocialNetworkCreator {
-    public abstract SocialNetwork createNetwork();
+// Абстрактний творець
+abstract class SocialNetworkFactory {
 
-    public void publish(String username, String password, String message) {
-        SocialNetwork network = createNetwork();
-        network.login(username, password);
-        network.postMessage(message);
-    }
+    public abstract SocialNetwork createSocialNetwork();
 }
 
-//Конкретний творець: Facebook
-class FacebookCreator extends SocialNetworkCreator {
+// Конкретна фабрика Facebook
+class FacebookFactory extends SocialNetworkFactory {
+
     private String login;
     private String password;
 
-    public FacebookCreator(String login, String password) {
+    public FacebookFactory(String login, String password) {
         this.login = login;
         this.password = password;
     }
 
     @Override
-    public SocialNetwork createNetwork() {
+    public SocialNetwork createSocialNetwork() {
         return new Facebook(login, password);
     }
 }
 
-// Конкретний творець: LinkedIn
-class LinkedInCreator extends SocialNetworkCreator {
+// Конкретна фабрика LinkedIn
+class LinkedInFactory extends SocialNetworkFactory {
+
     private String email;
     private String password;
 
-    public LinkedInCreator(String email, String password) {
+    public LinkedInFactory(String email, String password) {
         this.email = email;
         this.password = password;
     }
 
     @Override
-    public SocialNetwork createNetwork() {
+    public SocialNetwork createSocialNetwork() {
         return new LinkedIn(email, password);
-    }
-}
-
-// Демонстрація роботи
-public class Lab2 {
-    public static void main(String[] args) {
-        SocialNetworkCreator facebook = new FacebookCreator("userFB", "12345");
-        facebook.publish("userFB", "12345", "Привіт, Facebook!");
-
-        SocialNetworkCreator linkedIn = new LinkedInCreator("user@linkedin.com", "qwerty");
-        linkedIn.publish("user@linkedin.com", "qwerty", "Вітаю, LinkedIn!");
     }
 }
